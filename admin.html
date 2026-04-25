@@ -860,6 +860,7 @@
                     `;
                 } else {
                     iconCount++;
+                    const imageUrl = item.image && !item.image.startsWith('data:') ? item.image : '';
                     return `
                         <div class="icon-edit-item" data-index="${index}">
                             <div class="drag-handle">⋮⋮</div>
@@ -868,11 +869,15 @@
                                 ${item.image ? `<img src="${item.image}">` : '<div class="upload-hint">+</div>'}
                             </div>
                             <div class="icon-edit-fields">
-                                <div style="display: flex; align-items: center;">
-                                    <input type="text" placeholder="图标名称" value="${item.name}" onchange="updateItem(${index}, 'name', this.value)" style="flex: 1;">
+                                <div style="display:flex;align-items:center;">
+                                    <input type="text" placeholder="图标名称" value="${item.name}" onchange="updateItem(${index}, 'name', this.value)" style="flex:1;">
                                 </div>
-                                <div style="display: flex; gap: 10px;">
-                                    <input type="text" placeholder="跳转链接 https://..." value="${item.link}" onchange="updateItem(${index}, 'link', this.value)" style="flex: 1;">
+                                <div style="display:flex;gap:6px;align-items:center;">
+                                    <input type="text" placeholder="图片URL https://..." value="${imageUrl}" onchange="updateItem(${index}, 'image', this.value)" style="flex:1;font-size:12px;">
+                                    <button class="btn-small btn-test" onclick="selectImage(${index})" style="font-size:11px;padding:4px 8px;">📁上传</button>
+                                </div>
+                                <div style="display:flex;gap:10px;">
+                                    <input type="text" placeholder="跳转链接 https://..." value="${item.link}" onchange="updateItem(${index}, 'link', this.value)" style="flex:1;">
                                     ${item.link ? `<button class="btn-small btn-test" onclick="testLink(${index})">测试</button>` : ''}
                                     <button class="btn-small btn-delete" onclick="deleteItem(${index})">删除</button>
                                 </div>

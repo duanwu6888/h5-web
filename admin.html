@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H5图标管理后台 - 桌面版</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 20px;
+        }
+        
+        .header { 
+            grid-column: 1 / -1;
+            background: rgba(255,255,255,0.95);
+            color: #333; 
+            padding: 20px 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { 
+            font-size: 24px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header p { 
+            font-size: 14px; 
+            color: #666;
+        }
+        
+        .sidebar {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .card { 
+            background: #fff; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        
+        .card-title { 
+            font-size: 16px; 
+            font-weight: 600; 
+            margin-bottom: 16px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .input-group {
+            margin-bottom: 12px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        
+        .title-input, .subtitle-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .title-input:focus, .subtitle-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+        .btn-secondary {
+            background: #f0f4ff;
+            color: #667eea;
+            border: 2px dashed #667eea;
+        }
+        .btn-secondary:hover {
+            background: #e8edff;
+        }
+        
+        .main-content {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            min-height: calc(100vh - 140px);
+        }
+        
+        .phone-frame {
+            max-width: 375px;
+            margin: 0 auto 24px;
+            background: #fff;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            border: 8px solid #1a1a1a;
+            position: relative;
+        }
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #1a1a1a;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        
+        .phone-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 50px 24px 30px;
+            text-align: center;
+        }
+        .phone-title { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+        .phone-subtitle { font-size: 14px; opacity: 0.9; }
+        
+        .icon-grid-preview {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 16px;
+            min-height: 200px;
+        }
+        
+        .icon-preview-item {
+            width: calc(25% - 12px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 8px;
+            border-radius: 12px;
+            background: #fafafa;
+            cursor: grab;
+            transition: all 0.2s;
+        }
+        .icon-preview-item:hover {
+            background: #f0f4ff;
+            transform: scale(1.05);
+        }
+        .icon-preview-img {
+            width: 56px; height: 56px; border-radius: 14px; object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+        }
+        .icon-preview-text { margin-top: 10px; font-size: 12px; color: #333; font-weight: 500; }
+        
+        .draggable-subtitle {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            background: linear-gradient(90deg, #f0f4ff 0%, #e8edff 100%);
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            cursor: grab;
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .icon-edit-list { display: flex; flex-direction: column; gap: 12px; }
+        
+        .icon-edit-item {
+            display: flex; align-items: center; gap: 16px;
+            padding: 16px; background: #fafafa;
+            border-radius: 12px; border: 2px solid #e8e8e8;
+        }
+        
+        .drag-handle {
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            color: #999; font-size: 16px;
+            background: #f0f0f0; border-radius: 6px;
+            cursor: grab;
+        }
+        
+        .icon-num {
+            width: 28px; height: 28px; background: #667eea; color: #fff;
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: bold;
+        }
+        
+        .icon-upload-box {
+            position: relative;
+            width: 64px; height: 64px;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-upload-box.has-image { border: none; }
+        .icon-upload-box img { width: 100%; height: 100%; object-fit: cover; }
+        .upload-hint { font-size: 24px; color: #999; }
+        
+        .icon-edit-fields { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .icon-edit-fields input {
+            padding: 10px 14px; border: 2px solid #e8e8e8;
+            border-radius: 8px; font-size: 14px;
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-test { background: #52c41a; color: #fff; }
+        .btn-delete { background: #ff4d4f; color: #fff; }
+        
+        .action-bar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+        .action-bar .btn { width: auto; padding: 14px 28px; }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: #fff;
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.3s;
+            z-index: 300;
+        }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 400;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-content {
+            background: #fff;
+            padding: 28px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .modal-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        .modal-content input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-btns { display: flex; gap: 12px; }
+        .modal-btns button { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; }
+        .modal-confirm { background: #667eea; color: #fff; }
+        .modal-cancel { background: #f0f0f0; color: #666; }
+        
+        /* 登录覆盖层 */
+        .login-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .login-overlay.hidden { display: none; }
+        .login-box {
+            background: #fff; border-radius: 20px; padding: 40px;
+            width: 360px; max-width: 90%; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .login-box h2 {
+            font-size: 22px; margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .login-box p { color: #999; font-size: 14px; margin-bottom: 24px; }
+        .login-box input {
+            width: 100%; padding: 14px 16px; font-size: 16px;
+            border: 2px solid #e0e0e0; border-radius: 12px; margin-bottom: 16px;
+        }
+        .login-box input:focus { outline: none; border-color: #667eea; }
+        .login-box button {
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+        .login-box button:hover { opacity: 0.9; }
+        .login-error { color: #ff4d4f; font-size: 13px; margin-top: 10px; }
+        .login-hint { color: #999; font-size: 12px; margin-top: 16px; }
+
+        /* 用户管理 */
+        .user-list { display: flex; flex-direction: column; gap: 8px; }
+        .user-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; background: #fafafa;
+            border-radius: 10px; border: 1.5px solid #e8e8e8;
+        }
+        .user-info { flex: 1; }
+        .user-name { font-size: 15px; font-weight: 600; color: #333; }
+        .user-perms { font-size: 12px; color: #999; margin-top: 2px; }
+        .user-btns { display: flex; gap: 6px; }
+        .user-btns button {
+            padding: 6px 12px; border: none; border-radius: 6px;
+            font-size: 12px; cursor: pointer;
+        }
+        .user-edit-btn { background: #667eea; color: #fff; }
+        .user-delete-btn { background: #ff4d4f; color: #fff; }
+
+        .user-permissions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .perm-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px; background: #fff;
+            border-radius: 6px; border: 1px solid #e0e0e0;
+            cursor: pointer;
+        }
+        .perm-item.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .perm-item img {
+            width: 28px; height: 28px; border-radius: 6px; object-fit: cover;
+        }
+        .perm-item span {
+            font-size: 13px; color: #333;
+        }
+        .perm-item input[type="checkbox"] {
+            margin-left: auto; width: 16px; height: 16px;
+            accent-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录弹窗 -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>🔐 管理员登录</h2>
+            <p>请输入后台管理密码</p>
+            <input type="password" id="loginPassword" placeholder="密码" onkeydown="if(event.key==='Enter')doLogin()">
+            <button onclick="doLogin()">登 录</button>
+            <div class="login-error" id="loginError"></div>
+            <div class="login-hint">请输入管理密码</div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div class="header">
+            <div>
+                <h1>🎯 H5图标管理后台 - 桌面版</h1>
+                <p>适配Windows电脑端操作</p>
+            </div>
+            <button class="btn btn-secondary" onclick="openPwdModal()">🔐 修改密码</button>
+        </div>
+        
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-title">🏷️ 页面标题</div>
+                <div class="input-group">
+                    <label>主标题</label>
+                    <input type="text" class="title-input" id="pageTitle" placeholder="输入主标题" value="我的应用">
+                </div>
+                <div class="input-group">
+                    <label>副标题</label>
+                    <input type="text" class="subtitle-input" id="pageSubtitle" placeholder="输入副标题" value="欢迎使用">
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">📝 副标题设置</div>
+                <div class="input-group">
+                    <label>默认副标题文字</label>
+                    <input type="text" class="subtitle-input" id="iconAreaSubtitleInput" placeholder="输入副标题" value="">
+                </div>
+                <button class="btn btn-secondary" onclick="addSubtitle()">➕ 添加副标题</button>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">⚡ 快速操作</div>
+                <button class="btn btn-primary" onclick="previewPage()" style="margin-bottom: 10px;">👁️ 预览页面</button>
+                <button class="btn btn-primary" onclick="saveConfig()" style="background: #52c41a;">💾 保存配置</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="card" style="background: #f8f9fa;">
+                <div class="card-title">📱 实时预览</div>
+                <div class="phone-frame">
+                    <div class="phone-header">
+                        <div class="phone-title" id="previewTitle">我的应用</div>
+                        <div class="phone-subtitle" id="previewSubtitle">欢迎使用</div>
+                    </div>
+                    <div class="icon-grid-preview" id="previewGrid"></div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 24px;">
+                <div class="card-title">🎨 图标与副标题列表</div>
+                <input type="file" id="fileInput" accept="image/*" style="display:none">
+                <div class="icon-edit-list" id="editList"></div>
+                <button class="btn btn-secondary" onclick="addNewIcon()" style="margin-top: 16px;">+ 添加新图标</button>
+            </div>
+
+            <!-- 用户管理区域 -->
+            <div style="margin-top: 32px;">
+                <div class="card-title">👥 用户管理</div>
+                <div class="user-list" id="userList"></div>
+                <button class="btn btn-primary" onclick="openUserModal()" style="margin-top: 16px;">➕ 添加用户</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-bar">
+        <button class="btn btn-primary" onclick="previewPage()">👁️ 预览</button>
+        <button class="btn btn-primary" onclick="saveConfig()" style="background: #52c41a;">💾 保存</button>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <div class="modal-overlay" id="subtitleModal">
+        <div class="modal-content">
+            <div class="modal-title">✏️ 编辑副标题</div>
+            <input type="text" id="subtitleEditInput" placeholder="输入副标题内容">
+            <div class="modal-btns">
+                <button class="modal-confirm" onclick="saveSubtitle()">确定</button>
+                <button class="modal-cancel" onclick="closeSubtitleModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改密码弹窗 -->
+    <div class="modal-overlay" id="pwdModal">
+        <div class="modal-content">
+            <div class="modal-title">🔐 修改密码</div>
+            <input type="password" id="pwdOld" placeholder="旧密码" style="margin-bottom:10px;">
+            <input type="password" id="pwdNew" placeholder="新密码（至少4位）" style="margin-bottom:10px;">
+            <input type="password" id="pwdConfirm" placeholder="确认新密码" style="margin-bottom:10px;">
+            <div class="modal-btns">
+                <button class="modal-confirm" onclick="savePassword()">确定</button>
+                <button class="modal-cancel" onclick="closePwdModal()">取消</button>
+            </div>
+            <div id="pwdError" style="color:#ff4d4f;font-size:13px;margin-top:10px;"></div>
+        </div>
+    </div>
+
+    <!-- 用户编辑弹窗 -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal-content" style="max-width:480px;">
+            <div class="modal-title" id="userModalTitle">➕ 添加用户</div>
+            <input type="text" id="userUsername" placeholder="用户名" style="margin-bottom:10px;">
+            <input type="password" id="userPassword" placeholder="密码" style="margin-bottom:10px;">
+            <div style="margin-bottom:10px;">
+                <div style="font-size:13px;color:#666;margin-bottom:8px;">权限分配（勾选可访问的图标）：</div>
+                <div class="user-permissions" id="userPermissions"></div>
+            </div>
+            <div class="modal-btns">
+                <button class="modal-confirm" onclick="saveUser()">确定</button>
+                <button class="modal-cancel" onclick="closeUserModal()">取消</button>
+            </div>
+            <div id="userError" style="color:#ff4d4f;font-size:13px;margin-top:10px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = urlParams.get('project') || 'desktop';
+        
+        let items = [];
+        let currentEditIndex = -1;
+        let editingSubtitleId = null;
+        let pageTitle = '我的应用';
+        let pageSubtitle = '欢迎使用';
+        let iconAreaSubtitle = '';
+        let adminPass = localStorage.getItem('admin_pass') || '';
+        let users = [];
+        let editingUserId = null;
+        
+        function showLogin() {
+            document.getElementById('loginOverlay').classList.remove('hidden');
+        }
+        function hideLogin() {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('loginError').textContent = '';
+        }
+        
+        async function doLogin() {
+            const pwd = document.getElementById('loginPassword').value.trim();
+            if (!pwd) { document.getElementById('loginError').textContent = '请输入密码'; return; }
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    adminPass = pwd;
+                    localStorage.setItem('admin_pass', pwd);
+                    hideLogin();
+                    await initApp();
+                } else {
+                    document.getElementById('loginError').textContent = '密码错误，请重试';
+                }
+            } catch (e) {
+                document.getElementById('loginError').textContent = '登录失败: ' + e.message;
+            }
+        }
+        
+        async function checkLogin() {
+            if (!adminPass) { showLogin(); return false; }
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: adminPass })
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    adminPass = '';
+                    localStorage.removeItem('admin_pass');
+                    showLogin();
+                    return false;
+                }
+                return true;
+            } catch (e) {
+                showLogin();
+                return false;
+            }
+        }
+        
+        async function init() {
+            if (await checkLogin()) {
+                await initApp();
+            }
+        }
+
+        /* ===== 用户管理 ===== */
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/users', {
+                    headers: { 'x-admin-password': adminPass }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    users = data.users || [];
+                    renderUsers();
+                }
+            } catch (e) {
+                console.error('加载用户失败', e);
+            }
+        }
+
+        function renderUsers() {
+            const container = document.getElementById('userList');
+            if (users.length === 0) {
+                container.innerHTML = '<div style="color:#999;font-size:14px;text-align:center;padding:20px;">暂无用户，点击上方按钮添加</div>';
+                return;
+            }
+            container.innerHTML = users.map(user => {
+                const iconCount = user.allowedIconIds ? user.allowedIconIds.length : 0;
+                return `
+                    <div class="user-item">
+                        <div class="user-info">
+                            <div class="user-name">👤 ${user.username}</div>
+                            <div class="user-perms">可访问 ${iconCount} 个图标</div>
+                        </div>
+                        <div class="user-btns">
+                            <button class="user-edit-btn" onclick="editUser(${user.id})">编辑</button>
+                            <button class="user-delete-btn" onclick="deleteUser(${user.id})">删除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openUserModal() {
+            editingUserId = null;
+            document.getElementById('userModalTitle').textContent = '➕ 添加用户';
+            document.getElementById('userUsername').value = '';
+            document.getElementById('userPassword').value = '';
+            document.getElementById('userError').textContent = '';
+            renderUserPermissions([]);
+            document.getElementById('userModal').classList.add('show');
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('show');
+            editingUserId = null;
+        }
+
+        function renderUserPermissions(selectedIds) {
+            const container = document.getElementById('userPermissions');
+            const icons = items.filter(i => i.type === 'icon');
+            if (icons.length === 0) {
+                container.innerHTML = '<div style="color:#999;font-size:13px;">请先添加图标</div>';
+                return;
+            }
+            container.innerHTML = icons.map(icon => {
+                const checked = selectedIds.includes(icon.id) ? 'checked' : '';
+                return `
+                    <label class="perm-item ${checked ? 'selected' : ''}" onclick="this.classList.toggle('selected');this.querySelector('input').checked=!this.querySelector('input').checked;">
+                        <img src="${icon.image}" onerror="this.style.display='none'">
+                        <span>${icon.name}</span>
+                        <input type="checkbox" value="${icon.id}" ${checked} onclick="event.stopPropagation();this.parentElement.classList.toggle('selected');">
+                    </label>
+                `;
+            }).join('');
+        }
+
+        async function saveUser() {
+            const username = document.getElementById('userUsername').value.trim();
+            const password = document.getElementById('userPassword').value.trim();
+            const errEl = document.getElementById('userError');
+            const checkboxes = document.querySelectorAll('#userPermissions input[type="checkbox"]:checked');
+            const allowedIconIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+            if (!username || !password) { errEl.textContent = '用户名和密码必填'; return; }
+
+            try {
+                let res;
+                if (editingUserId) {
+                    res = await fetch(`/api/users/${editingUserId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPass },
+                        body: JSON.stringify({ username, password, allowedIconIds })
+                    });
+                } else {
+                    res = await fetch('/api/users', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPass },
+                        body: JSON.stringify({ username, password, allowedIconIds })
+                    });
+                }
+                const data = await res.json();
+                if (data.success) {
+                    closeUserModal();
+                    await loadUsers();
+                    showToast(editingUserId ? '✅ 用户已更新' : '✅ 用户已创建');
+                } else {
+                    errEl.textContent = data.message || '保存失败';
+                }
+            } catch (e) {
+                errEl.textContent = '请求失败: ' + e.message;
+            }
+        }
+
+        async function editUser(id) {
+            const user = users.find(u => u.id === id);
+            if (!user) return;
+            editingUserId = id;
+            document.getElementById('userModalTitle').textContent = '✏️ 编辑用户';
+            document.getElementById('userUsername').value = user.username;
+            document.getElementById('userPassword').value = '';
+            document.getElementById('userError').textContent = '';
+            renderUserPermissions(user.allowedIconIds || []);
+            document.getElementById('userModal').classList.add('show');
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('确定删除该用户？')) return;
+            try {
+                const res = await fetch(`/api/users/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'x-admin-password': adminPass }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    await loadUsers();
+                    showToast('✅ 用户已删除');
+                } else {
+                    showToast('❌ 删除失败');
+                }
+            } catch (e) {
+                showToast('❌ 删除失败: ' + e.message);
+            }
+        }
+        
+        async function loadServerConfig() {
+            try {
+                const res = await fetch('/api/config');
+                const config = await res.json();
+                items = config.items || [];
+                pageTitle = config.title || '我的应用';
+                pageSubtitle = config.subtitle || '欢迎使用';
+                iconAreaSubtitle = config.iconAreaSubtitle || '';
+            } catch (e) {
+                console.error('加载配置失败', e);
+                items = [
+                    { id: 1, type: 'icon', name: '首页', image: 'https://via.placeholder.com/60/667eea/fff?text=首', link: '' },
+                    { id: 2, type: 'icon', name: '产品', image: 'https://via.placeholder.com/60/764ba2/fff?text=产', link: '' },
+                    { id: 3, type: 'icon', name: '服务', image: 'https://via.placeholder.com/60/f093fb/fff?text=服', link: '' },
+                    { id: 4, type: 'icon', name: '关于', image: 'https://via.placeholder.com/60/4facfe/fff?text=关', link: '' }
+                ];
+            }
+        }
+        
+        async function initApp() {
+            await loadServerConfig();
+            await loadUsers();
+            document.getElementById('pageTitle').value = pageTitle;
+            document.getElementById('pageSubtitle').value = pageSubtitle;
+            document.getElementById('iconAreaSubtitleInput').value = iconAreaSubtitle;
+            
+            document.getElementById('pageTitle').oninput = function() {
+                pageTitle = this.value;
+                document.getElementById('previewTitle').textContent = pageTitle || '我的应用';
+            };
+            
+            document.getElementById('pageSubtitle').oninput = function() {
+                pageSubtitle = this.value;
+                document.getElementById('previewSubtitle').textContent = pageSubtitle;
+                document.getElementById('previewSubtitle').style.display = pageSubtitle ? 'block' : 'none';
+            };
+            
+            document.getElementById('iconAreaSubtitleInput').oninput = function() {
+                iconAreaSubtitle = this.value;
+            };
+            
+            document.getElementById('fileInput').onchange = handleFileSelect;
+            
+            render();
+        }
+        
+        function render() {
+            renderPreview();
+            renderList();
+        }
+        
+        function renderPreview() {
+            document.getElementById('previewTitle').textContent = pageTitle || '我的应用';
+            document.getElementById('previewSubtitle').textContent = pageSubtitle;
+            document.getElementById('previewSubtitle').style.display = pageSubtitle ? 'block' : 'none';
+            
+            const grid = document.getElementById('previewGrid');
+            grid.innerHTML = items.map((item, index) => {
+                if (item.type === 'subtitle') {
+                    return `
+                        <div class="draggable-subtitle" data-index="${index}" data-id="${item.id}">
+                            <span>${item.text || ''}</span>
+                            <div>
+                                <span onclick="event.stopPropagation();editSubtitle('${item.id}')" style="cursor:pointer;">✏️</span>
+                                <span onclick="event.stopPropagation();deleteItem(${index})" style="cursor:pointer;color:#ff4d4f;">🗑️</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="icon-preview-item" data-index="${index}" data-id="${item.id}">
+                            <img class="icon-preview-img" src="${item.image}" onerror="this.src='https://via.placeholder.com/56'">
+                            <span class="icon-preview-text">${item.name}</span>
+                        </div>
+                    `;
+                }
+            }).join('');
+            
+            new Sortable(grid, {
+                animation: 200,
+                ghostClass: 'sortable-ghost',
+                onEnd: function(e) {
+                    if (e.oldIndex !== e.newIndex) {
+                        const item = items.splice(e.oldIndex, 1)[0];
+                        items.splice(e.newIndex, 0, item);
+                        renderList();
+                        showToast('✅ 排序已更新');
+                    }
+                }
+            });
+        }
+        
+        function renderList() {
+            const list = document.getElementById('editList');
+            let iconCount = 0;
+            
+            list.innerHTML = items.map((item, index) => {
+                if (item.type === 'subtitle') {
+                    return `
+                        <div class="icon-edit-item" style="background: #f0f4ff; border-color: #667eea;" data-index="${index}">
+                            <div class="drag-handle">⋮⋮</div>
+                            <div style="flex: 1; font-size: 15px; font-weight: 600; color: #667eea;">📝 ${item.text || '（空白副标题）'}</div>
+                            <button class="btn-small btn-test" onclick="editSubtitle('${item.id}')">编辑</button>
+                            <button class="btn-small btn-delete" onclick="deleteItem(${index})">删除</button>
+                        </div>
+                    `;
+                } else {
+                    iconCount++;
+                    return `
+                        <div class="icon-edit-item" data-index="${index}">
+                            <div class="drag-handle">⋮⋮</div>
+                            <div class="icon-num">${iconCount}</div>
+                            <div class="icon-upload-box ${item.image ? 'has-image' : ''}" onclick="selectImage(${index})">
+                                ${item.image ? `<img src="${item.image}">` : '<div class="upload-hint">+</div>'}
+                            </div>
+                            <div class="icon-edit-fields">
+                                <div style="display: flex; align-items: center;">
+                                    <input type="text" placeholder="图标名称" value="${item.name}" onchange="updateItem(${index}, 'name', this.value)" style="flex: 1;">
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" placeholder="跳转链接 https://..." value="${item.link}" onchange="updateItem(${index}, 'link', this.value)" style="flex: 1;">
+                                    ${item.link ? `<button class="btn-small btn-test" onclick="testLink(${index})">测试</button>` : ''}
+                                    <button class="btn-small btn-delete" onclick="deleteItem(${index})">删除</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+            
+            new Sortable(list, {
+                animation: 200,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                onEnd: function(e) {
+                    if (e.oldIndex !== e.newIndex) {
+                        const item = items.splice(e.oldIndex, 1)[0];
+                        items.splice(e.newIndex, 0, item);
+                        render();
+                        showToast('✅ 排序已更新');
+                    }
+                }
+            });
+        }
+        
+        function selectImage(index) {
+            currentEditIndex = index;
+            document.getElementById('fileInput').click();
+        }
+        
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) { showToast('⚠️ 请选择图片文件'); return; }
+            if (file.size > 5 * 1024 * 1024) { showToast('⚠️ 图片大小不能超过5MB'); return; }
+            
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                if (currentEditIndex >= 0 && items[currentEditIndex].type === 'icon') {
+                    items[currentEditIndex].image = evt.target.result;
+                    render();
+                    showToast('✅ 图片更换成功');
+                }
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        }
+        
+        function addNewIcon() {
+            items.push({ id: Date.now(), type: 'icon', name: '新图标', image: '', link: '' });
+            render();
+            showToast('✅ 已添加新图标');
+        }
+        
+        function addSubtitle() {
+            const text = document.getElementById('iconAreaSubtitleInput').value || '新副标题';
+            items.push({ id: 'subtitle_' + Date.now(), type: 'subtitle', text: text });
+            render();
+            showToast('✅ 已添加副标题');
+        }
+        
+        function editSubtitle(id) {
+            const item = items.find(i => i.id === id);
+            if (item) {
+                editingSubtitleId = id;
+                document.getElementById('subtitleEditInput').value = item.text;
+                document.getElementById('subtitleModal').classList.add('show');
+            }
+        }
+        
+        function saveSubtitle() {
+            const text = document.getElementById('subtitleEditInput').value;
+            const item = items.find(i => i.id === editingSubtitleId);
+            if (item) { item.text = text; render(); showToast('✅ 副标题已更新'); }
+            closeSubtitleModal();
+        }
+        
+        function closeSubtitleModal() {
+            document.getElementById('subtitleModal').classList.remove('show');
+            editingSubtitleId = null;
+        }
+        
+        /* ===== 修改密码 ===== */
+        function openPwdModal() {
+            document.getElementById('pwdModal').classList.add('show');
+            document.getElementById('pwdError').textContent = '';
+            document.getElementById('pwdOld').value = '';
+            document.getElementById('pwdNew').value = '';
+            document.getElementById('pwdConfirm').value = '';
+        }
+        function closePwdModal() {
+            document.getElementById('pwdModal').classList.remove('show');
+            document.getElementById('pwdError').textContent = '';
+        }
+        async function savePassword() {
+            const oldPwd = document.getElementById('pwdOld').value.trim();
+            const newPwd = document.getElementById('pwdNew').value.trim();
+            const confirmPwd = document.getElementById('pwdConfirm').value.trim();
+            const errEl = document.getElementById('pwdError');
+            
+            if (!oldPwd || !newPwd || !confirmPwd) { errEl.textContent = '请填写所有字段'; return; }
+            if (newPwd !== confirmPwd) { errEl.textContent = '两次新密码不一致'; return; }
+            if (newPwd.length < 4) { errEl.textContent = '新密码至少4位'; return; }
+            
+            try {
+                const res = await fetch('/api/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    adminPass = newPwd;
+                    localStorage.setItem('admin_pass', newPwd);
+                    closePwdModal();
+                    showToast('✅ 密码修改成功！');
+                } else {
+                    errEl.textContent = data.message || '修改失败';
+                }
+            } catch (e) {
+                errEl.textContent = '请求失败: ' + e.message;
+            }
+        }
+        
+        function updateItem(index, field, value) {
+            if (items[index].type === 'icon') {
+                items[index][field] = value;
+                if (field === 'name') renderPreview();
+                if (field === 'link') renderList();
+            }
+        }
+        
+        function deleteItem(index) {
+            if (confirm('确定删除此项？')) { items.splice(index, 1); render(); }
+        }
+        
+        function testLink(index) {
+            const link = items[index].link;
+            if (!link) { showToast('⚠️ 请先输入链接'); return; }
+            let url = link.startsWith('http') ? link : 'https://' + link;
+            window.open(url, '_blank');
+        }
+        
+        async function saveConfig() {
+            const config = {
+                title: pageTitle,
+                subtitle: pageSubtitle,
+                iconAreaSubtitle: iconAreaSubtitle,
+                items: items,
+                footer: '© 2024 All Rights Reserved'
+            };
+            
+            try {
+                const res = await fetch('/api/save', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-admin-password': adminPass
+                    },
+                    body: JSON.stringify(config)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ 保存成功！');
+                } else {
+                    showToast('❌ 保存失败: ' + (data.message || ''));
+                }
+            } catch (e) {
+                showToast('❌ 保存失败: ' + e.message);
+            }
+        }
+        
+        async function previewPage() {
+            await saveConfig();
+            window.open(`index.html?project=${projectId}`, '_blank');
+        }
+        
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+        
+        init();
+    </script>
+</body>
+</html>

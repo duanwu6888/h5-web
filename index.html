@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H5展示页 - Windows桌面版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* 容器 - 全屏宽度 */
+        .desktop-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 30px 40px;
+        }
+
+        /* 顶部标题区 */
+        .header-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+        .header-title {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .header-subtitle {
+            font-size: 20px;
+            color: #666;
+        }
+
+        /* 主内容区 */
+        .main-section {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            min-height: 500px;
+        }
+
+        /* 图标网格 - 全屏自适应 */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 30px;
+        }
+
+        .icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 30px 20px;
+            border-radius: 16px;
+            background: #fafafa;
+            border: 2px solid transparent;
+        }
+        .icon-item:hover {
+            transform: translateY(-5px);
+            background: #f0f4ff;
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102,126,234,0.2);
+        }
+
+        .icon-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            object-fit: cover;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+        .icon-item:hover .icon-img {
+            transform: scale(1.05);
+        }
+
+        .icon-text {
+            margin-top: 16px;
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* 副标题样式 */
+        .subtitle-item {
+            grid-column: 1 / -1;
+            padding: 20px 30px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+            background: linear-gradient(90deg, #f0f4ff 0%, #e8edff 100%);
+            border-left: 5px solid #667eea;
+            border-radius: 12px;
+            text-align: left;
+            margin: 10px 0;
+        }
+
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255,255,255,0.9);
+            font-size: 16px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            color: #999;
+        }
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        .empty-state-text {
+            font-size: 20px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 1400px) {
+            .icon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .desktop-container {
+                padding: 20px 30px;
+            }
+            .header-title {
+                font-size: 36px;
+            }
+            .icon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 20px;
+            }
+            .icon-img {
+                width: 64px;
+                height: 64px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .desktop-container {
+                padding: 15px 20px;
+            }
+            .header-section {
+                padding: 24px;
+            }
+            .header-title {
+                font-size: 28px;
+            }
+            .main-section {
+                padding: 24px;
+            }
+            .icon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 15px;
+            }
+            .icon-item {
+                padding: 20px 12px;
+            }
+            .icon-img {
+                width: 56px;
+                height: 56px;
+            }
+        }
+
+        /* 登录覆盖层 */
+        .login-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .login-overlay.hidden { display: none; }
+        .login-box {
+            background: #fff; border-radius: 20px; padding: 40px;
+            width: 360px; max-width: 90%; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .login-box h2 {
+            font-size: 22px; margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .login-box p { color: #999; font-size: 14px; margin-bottom: 24px; }
+        .login-box input {
+            width: 100%; padding: 14px 16px; font-size: 16px;
+            border: 2px solid #e0e0e0; border-radius: 12px; margin-bottom: 16px;
+        }
+        .login-box input:focus { outline: none; border-color: #667eea; }
+        .login-box button {
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+        .login-box button:hover { opacity: 0.9; }
+        .login-error { color: #ff4d4f; font-size: 13px; margin-top: 10px; }
+        .login-hint { color: #999; font-size: 12px; margin-top: 16px; }
+
+        .content-hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <!-- 登录弹窗 -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>🔐 用户登录</h2>
+            <p>请输入用户名和密码</p>
+            <input type="text" id="loginUsername" placeholder="用户名" onkeydown="if(event.key==='Enter')doLogin()">
+            <input type="password" id="loginPassword" placeholder="密码" onkeydown="if(event.key==='Enter')doLogin()">
+            <button onclick="doLogin()">登 录</button>
+            <div class="login-error" id="loginError"></div>
+            <div class="login-hint">由管理员分配账号</div>
+        </div>
+    </div>
+
+    <div class="desktop-container content-hidden" id="mainContent">
+        <!-- 顶部标题 -->
+        <div class="header-section">
+            <div class="header-title" id="pageTitle">我的应用</div>
+            <div class="header-subtitle" id="pageSubtitle">欢迎使用</div>
+        </div>
+
+        <!-- 主内容 -->
+        <div class="main-section">
+            <div class="icon-grid" id="iconGrid"></div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer" id="footerText">© 2024 All Rights Reserved</div>
+    </div>
+
+    <script>
+    let currentUser = null;
+
+    function showLogin() {
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        document.getElementById('mainContent').classList.add('content-hidden');
+    }
+    function hideLogin() {
+        document.getElementById('loginOverlay').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('content-hidden');
+        document.getElementById('loginError').textContent = '';
+    }
+
+    async function doLogin() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        if (!username || !password) {
+            document.getElementById('loginError').textContent = '请输入用户名和密码';
+            return;
+        }
+        try {
+            const res = await fetch('/api/user-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentUser = data.user;
+                hideLogin();
+                await loadContent();
+            } else {
+                document.getElementById('loginError').textContent = data.message || '登录失败';
+            }
+        } catch (e) {
+            document.getElementById('loginError').textContent = '登录失败: ' + e.message;
+        }
+    }
+
+    async function loadContent() {
+        if (!currentUser) { showLogin(); return; }
+        try {
+            const res = await fetch('/api/config');
+            const fullConfig = await res.json();
+            const allowedIds = currentUser.allowedIconIds || [];
+            const items = (fullConfig.items || []).filter(item => {
+                if (item.type === 'subtitle') return true;
+                return allowedIds.includes(item.id);
+            });
+
+            if (fullConfig.title) {
+                document.getElementById('pageTitle').textContent = fullConfig.title;
+                document.title = fullConfig.title;
+            }
+            if (fullConfig.subtitle) {
+                document.getElementById('pageSubtitle').textContent = fullConfig.subtitle;
+            } else {
+                document.getElementById('pageSubtitle').style.display = 'none';
+            }
+
+            const grid = document.getElementById('iconGrid');
+            if (items.length === 0 || items.every(i => i.type !== 'icon')) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">🔒</div>
+                        <div class="empty-state-text">暂无可用图标，请联系管理员分配权限</div>
+                    </div>
+                `;
+            } else {
+                grid.innerHTML = items.map(item => {
+                    if (item.type === 'subtitle') {
+                        return `<div class="subtitle-item">${item.text}</div>`;
+                    }
+                    let url = item.link || '';
+                    if (url && !url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('#')) {
+                        url = 'https://' + url;
+                    }
+                    const clickHandler = url ? `window.open('${url}', '_blank')` : `alert('该图标未设置链接')`;
+                    return `
+                        <div class="icon-item" onclick="${clickHandler}">
+                            <img class="icon-img" src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/80/ccc/fff?text=图标'">
+                            <span class="icon-text">${item.name}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+            if (fullConfig.footer) {
+                document.getElementById('footerText').textContent = fullConfig.footer;
+            }
+        } catch (e) {
+            console.error('加载配置失败', e);
+        }
+    }
+
+    showLogin();
+    </script>
+</body>
+</html>
